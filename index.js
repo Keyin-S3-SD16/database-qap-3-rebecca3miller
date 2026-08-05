@@ -5,7 +5,30 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 // Connect to MongoDB //
-mongoose.connect(process.env.MONGO_URL);
+mongoose.connect(process.env.MONGO_URL)
+  .then(() => console.log("Connected to MongoDB"))
+  .catch((err) => console.log(err));
+
+const cdSchema = new mongoose.Schema({
+  title: {
+    type: String,
+    required: true
+  },
+  artist: {
+    type: String,
+    required: true
+  },
+  genre: {
+    type: String,
+    required: true
+  },
+  year: {
+    type: Number,
+    required: true
+  }
+});
+
+const CD = mongoose.model("CD", cdSchema, "cds");
 
 app.use(express.json());
 
