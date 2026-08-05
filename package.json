@@ -12,7 +12,8 @@
   "dependencies": {
     "@types/express": "^5.0.0",
     "@types/mongoose": "^5.11.96",
+    "dotenv": "^17.4.2",
     "express": "^4.21.1",
-    "mongoose": "^8.12.2"
+    "mongoose": "^8.24.2"
   }
 }
