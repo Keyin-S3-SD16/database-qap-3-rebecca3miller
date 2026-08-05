@@ -71,15 +71,18 @@ app.post('/cds', async (req, res) => {
 });
 
 // PUT /cds/:id - Update an existing CD
-app.put('/cds/:id', (req, res) => {
+app.put('/cds/:id', async (req, res) => {
   const id = parseInt(req.params.id);
-  const cd = cds.find(cd => cd.id === id);
-
   const { title, artist, genre, year } = req.body;
+
+  const cd = await CD.findOne({ id: id });
+
   if (title) cd.title = title;
   if (artist) cd.artist = artist;
   if (genre) cd.genre = genre;
   if (year) cd.year = year;
+
+  await cd.save;
 
   res.json(cd);
 });
