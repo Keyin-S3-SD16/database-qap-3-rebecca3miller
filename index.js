@@ -88,11 +88,18 @@ app.put('/cds/:id', async (req, res) => {
 });
 
 // DELETE /cds/:id - Delete a CD
-app.delete('/cds/:id', (req, res) => {
+app.delete('/cds/:id', async (req, res) => {
   const id = parseInt(req.params.id);
-  const index = cds.findIndex(cd => cd.id === id);
-  const deleted = cds.splice(index, 1);
-  res.json(deleted[0]);
+
+  const deleted = await CD.findOneAndDelete({ id: id });
+
+  if (!deleted) {
+    return res.status(404).json({
+      error: "CD not found."
+    });
+  }
+
+  res.json(deleted);
 });
 
 // TODO:
