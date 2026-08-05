@@ -32,26 +32,46 @@ const CD = mongoose.model("CD", cdSchema, "cds");
 
 app.use(express.json());
 
-// In-memory CD collection
-let cds = [
-  { id: 1, title: 'Hybrid Theory', artist: 'Linkin Park', genre: 'Rock', year: 2000 },
-  { id: 2, title: 'Thriller', artist: 'Michael Jackson', genre: 'Pop', year: 1982 },
-  { id: 3, title: 'The Eminem Show', artist: 'Eminem', genre: 'Hip-Hop', year: 2002 },
-  { id: 4, title: 'Back in Black', artist: 'AC/DC', genre: 'Rock', year: 1980 },
-  { id: 5, title: '21', artist: 'Adele', genre: 'Soul', year: 2011 },
-  { id: 6, title: 'Fearless', artist: 'Taylor Swift', genre: 'Country', year: 2008 },
-  { id: 7, title: 'Nevermind', artist: 'Nirvana', genre: 'Grunge', year: 1991 },
-  { id: 8, title: 'Future Nostalgia', artist: 'Dua Lipa', genre: 'Pop', year: 2020 },
-  { id: 9, title: 'American Idiot', artist: 'Green Day', genre: 'Punk Rock', year: 2004 },
-  { id: 10, title: 'Good Kid, M.A.A.D City', artist: 'Kendrick Lamar', genre: 'Hip-Hop', year: 2012 }
-];
+// // In-memory CD collection
+// let cds = [
+//   { id: 1, title: 'Hybrid Theory', artist: 'Linkin Park', genre: 'Rock', year: 2000 },
+//   { id: 2, title: 'Thriller', artist: 'Michael Jackson', genre: 'Pop', year: 1982 },
+//   { id: 3, title: 'The Eminem Show', artist: 'Eminem', genre: 'Hip-Hop', year: 2002 },
+//   { id: 4, title: 'Back in Black', artist: 'AC/DC', genre: 'Rock', year: 1980 },
+//   { id: 5, title: '21', artist: 'Adele', genre: 'Soul', year: 2011 },
+//   { id: 6, title: 'Fearless', artist: 'Taylor Swift', genre: 'Country', year: 2008 },
+//   { id: 7, title: 'Nevermind', artist: 'Nirvana', genre: 'Grunge', year: 1991 },
+//   { id: 8, title: 'Future Nostalgia', artist: 'Dua Lipa', genre: 'Pop', year: 2020 },
+//   { id: 9, title: 'American Idiot', artist: 'Green Day', genre: 'Punk Rock', year: 2004 },
+//   { id: 10, title: 'Good Kid, M.A.A.D City', artist: 'Kendrick Lamar', genre: 'Hip-Hop', year: 2012 }
+// ];
 
-let nextId = 11;
+// let nextId = 11;
 
 // GET /cds - Return all CDs
 app.get('/cds', async (req, res) => {
-  const cds = await CD.find();
+  const filter = {};
 
+  if (req.query.artist) {
+    filter.artist = req.query.artist;
+  }
+
+  if (req.query.genre) {
+    filter.genre = req.query.genre;
+  }
+
+  if (req.query.before) {
+    filter.year = {$lt: parseInt(req.query.before)
+    };
+  }
+
+  let query = CD.find(filter);
+
+  if (req.query.fields === "title") {
+    query = query.select("title -_id");
+  }
+
+  const cds = await query;
   res.json(cds);
 });
 
@@ -59,6 +79,7 @@ app.get('/cds', async (req, res) => {
 app.post('/cds', async (req, res) => {
   const { title, artist, genre, year } = req.body;
   const newCd = new CD({
+      id: nextId++,
       title,
       artist,
       genre,
