@@ -49,16 +49,25 @@ let cds = [
 let nextId = 11;
 
 // GET /cds - Return all CDs
-app.get('/cds', (req, res) => {
+app.get('/cds', async (req, res) => {
+  const cds = await CD.find();
+
   res.json(cds);
 });
 
 // POST /cds - Add a new CD
-app.post('/cds', (req, res) => {
+app.post('/cds', async (req, res) => {
   const { title, artist, genre, year } = req.body;
-  const newCd = { id: nextId++, title, artist, genre, year };
-  cds.push(newCd);
-  res.status(201).json(newCd);
+  const newCd = new CD({
+      title,
+      artist,
+      genre,
+      year
+  });
+
+    await newCd.save();
+
+    res.status(201).json(newCd);
 });
 
 // PUT /cds/:id - Update an existing CD
