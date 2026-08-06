@@ -10,6 +10,11 @@ mongoose.connect(process.env.MONGO_URL)
   .catch((err) => console.log(err));
 
 const cdSchema = new mongoose.Schema({
+  id: {
+    type: Number,
+    required: true,
+    unique: true
+  },
   title: {
     type: String,
     required: true
@@ -78,18 +83,43 @@ app.get('/cds', async (req, res) => {
 // POST /cds - Add a new CD
 app.post('/cds', async (req, res) => {
   const { title, artist, genre, year } = req.body;
-  const newCd = new CD({
-      id: nextId++,
-      title,
-      artist,
-      genre,
-      year
-  });
+
+  if (!title || !artist || !genre || year === undefined) {
+    return res.status(400).json({
+      error: "Title, artist, genre, and year are required."
+    });
+  }
+
+  if (isNaN(year)) {
+    return res.status(400).json({
+      error: "Year must be a number."
+    });
+  }
+
+  try {
+    const lastCd = await CD.findOne().sort({ id: -1 });
+    const nextId = lastCd ? lastCd.id + 1 : 1;
+
+  
+
+    const newCd = new CD({
+        id: nextId,
+        title,
+        artist,
+        genre,
+        year
+    });
 
     await newCd.save();
 
     res.status(201).json(newCd);
+  } catch (error) {
+    res.status(500).json({
+      error: "Unable to add CD."
+    });
+  }
 });
+
 
 // PUT /cds/:id - Update an existing CD
 app.put('/cds/:id', async (req, res) => {
@@ -98,10 +128,16 @@ app.put('/cds/:id', async (req, res) => {
 
   const cd = await CD.findOne({ id: id });
 
+  if (!cd) {
+    return res.status(404).json({
+      error: "CD not found."
+    });
+  }
+
   if (title) cd.title = title;
   if (artist) cd.artist = artist;
   if (genre) cd.genre = genre;
-  if (year) cd.year = year;
+  if (year !== undefined) cd.year = year;
 
   await cd.save;
 
@@ -123,11 +159,6 @@ app.delete('/cds/:id', async (req, res) => {
   res.json(deleted);
 });
 
-// TODO:
-// - Replace in-memory data with a Mongoose model
-// - Replace all CRUD operations with MongoDB queries
-// - Implement query support for filtering and selecting fields
-// - Add proper error checking and validation for inputs and operations
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
